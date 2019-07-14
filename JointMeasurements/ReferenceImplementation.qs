@@ -10,66 +10,52 @@
 
 namespace Quantum.Kata.JointMeasurements {
     
-    open Microsoft.Quantum.Primitive;
-    open Microsoft.Quantum.Canon;
-    open Microsoft.Quantum.Extensions.Convert;
-    open Microsoft.Quantum.Extensions.Math;
+    open Microsoft.Quantum.Characterization;
+    open Microsoft.Quantum.Intrinsic;
+    open Microsoft.Quantum.Measurement;
     
     
     // Task 1. Single-qubit measurement
     operation SingleQubitMeasurement_Reference (qs : Qubit[]) : Int {
         // Hint: use two single-qubit measurements
-        if (M(qs[0]) == M(qs[1])) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return M(qs[0]) == M(qs[1]) ? 0 | 1;
     }
     
     
     // Task 2. Parity measurement
     operation ParityMeasurement_Reference (qs : Qubit[]) : Int {
-        if (Measure([PauliZ, PauliZ], qs) == Zero) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return Measure([PauliZ, PauliZ], qs) == Zero ? 0 | 1;
     }
     
     
     // Task 3. |0000⟩ + |1111⟩ or |0011⟩ + |1100⟩ ?
     operation GHZOrGHZWithX_Reference (qs : Qubit[]) : Int {
-        if (Measure([PauliZ, PauliZ], qs[1 .. 2]) == Zero) {
-            return 0;
-        } else {
-            return 1;
-        }
+        // Considering only the two middle qubits of the array, their parity for the first state is 0,
+        // so the first state belongs to the +1 eigenspace of operator Z ⊗ Z on these qubits;
+        // their parity for the second state is 1, so the second state belongs to the -1 eigenspace.
+        return Measure([PauliZ, PauliZ], qs[1 .. 2]) == Zero ? 0 | 1;
     }
     
     
     // Task 4. |0..0⟩ + |1..1⟩ or W state ?
     operation GHZOrWState_Reference (qs : Qubit[]) : Int {
-        if (MeasureAllZ(qs) == Zero) {
-            return 0;
-        } else {
-            return 1;
-        }
+        // Since the number of qubits in qs is even, the parity of both |0..0⟩ and |1..1⟩ basis states is 0,
+        // so both of them belong to the +1 eigenspace of operator Z ⊗ Z ⊗ ... ⊗ Z. 
+        // All basis vectors in W state have parity 1 and belong to the -1 eigenspace of this operator.
+        return MeasureAllZ(qs) == Zero ? 0 | 1;
     }
     
     
-    // Task 5. Parity measurement in different basis
+    // Task 5*. Parity measurement in different basis
     operation DifferentBasis_Reference (qs : Qubit[]) : Int {
-        // The first state is a superposition of |++⟩ and |--⟩,
-        // the second one - of |+-⟩ and |-+⟩
-        if (Measure([PauliX, PauliX], qs) == Zero) {
-            return 0;
-        } else {
-            return 1;
-        }
+        // The first state is a superposition of the states |++⟩ and |--⟩, 
+        // which belong to the +1 eigenspace of the operator X ⊗ X;
+        // the second one is a superposition of |+-⟩ and |-+⟩, which belong to the -1 eigenspace.
+        return Measure([PauliX, PauliX], qs) == Zero ? 0 | 1;
     }
     
     
-    // Task 6. Controlled X gate with |0⟩ target
+    // Task 6*. Controlled X gate with |0⟩ target
     operation ControlledX_Reference (qs : Qubit[]) : Unit {
         H(qs[1]);
         if (Measure([PauliZ, PauliZ], qs) == One) {
@@ -78,16 +64,15 @@ namespace Quantum.Kata.JointMeasurements {
     }
     
     
-    // Task 7*. Controlled X gate with arbitrary target
+    // Task 7**. Controlled X gate with arbitrary target
     operation ControlledX_General_Reference (qs : Qubit[]) : Unit {
         
         body (...) {
             // This implementation follows the description at https://arxiv.org/pdf/1201.5734.pdf.
             // Note the parity notation used in the table of fixups in the paper
             // differs from the notation used in Q#.
-            using (ans = Qubit[1]) {
+            using (a = Qubit()) {
                 let c = qs[0];
-                let a = ans[0];
                 let t = qs[1];
                 H(a);
                 let p1 = MeasureAllZ([c, a]);
@@ -96,7 +81,7 @@ namespace Quantum.Kata.JointMeasurements {
                 let p2 = MeasureAllZ([a, t]);
                 H(a);
                 H(t);
-                let m = M(a);
+                let m = MResetZ(a);
                 
                 // apply fixups
                 if (p2 == One) {
@@ -104,11 +89,6 @@ namespace Quantum.Kata.JointMeasurements {
                 }
                 if (p1 != m) {
                     X(t);
-                }
-                
-                // reset ancilla qubit
-                if (m == One) {
-                    X(a);
                 }
             }
         }

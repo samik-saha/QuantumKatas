@@ -1,10 +1,12 @@
 # Welcome!
 
+You can [run the DeutschJozsaAlgorithm kata as a Jupyter Notebook](https://mybinder.org/v2/gh/Microsoft/QuantumKatas/master?filepath=DeutschJozsaAlgorithm%2FDeutschJozsaAlgorithm.ipynb)!
+
 This kata covers several well-studied algorithms and concepts. 
 
 #### Quantum oracles
 
-A good introduction to quantum oracles can be found in [the Q# documentation](https://docs.microsoft.com/en-us/quantum/concepts/oracles).
+A good introduction to quantum oracles can be found in [the Q# documentation](https://docs.microsoft.com/quantum/concepts/oracles).
 
 #### Deutsch-Jozsa algorithm
 
